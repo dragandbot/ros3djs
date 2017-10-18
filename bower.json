@@ -18,11 +18,14 @@
     "robot"
   ],
   "authors": [
-     "Robot Webtools Team <robot-web-tools@googlegroups.com> (http://robotwebtools.org)"
+    "Robot Webtools Team <robot-web-tools@googlegroups.com> (http://robotwebtools.org)"
   ],
   "dependencies": {
     "eventemitter2": "asyncly/EventEmitter2#^0.4.14",
     "threejs": "mrdoob/three.js#r64",
-    "roslibjs": "RobotWebTools/roslibjs#0.14.0"
+    "roslib": "git://github.com/Faibk/roslibjs.git#develop"
+  },
+  "resolutions": {
+    "eventemitter2": "~2.2.0"
   }
 }

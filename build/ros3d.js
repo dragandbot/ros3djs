@@ -1263,6 +1263,8 @@ ROS3D.InteractiveMarkerControl = function(options) {
       addMarker(null);
     }
   });
+
+  localTfClient.dispose();
 };
 ROS3D.InteractiveMarkerControl.prototype.__proto__ = THREE.Object3D.prototype;
 
