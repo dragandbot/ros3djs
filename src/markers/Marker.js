@@ -11,14 +11,11 @@
  *
  *   * path - the base path or URL for any mesh files that will be loaded for this marker
  *   * message - the marker message
- *   * loader (optional) - the Collada loader to use (e.g., an instance of ROS3D.COLLADA_LOADER
- *                         ROS3D.COLLADA_LOADER_2) -- defaults to ROS3D.COLLADA_LOADER_2
  */
 ROS3D.Marker = function(options) {
   options = options || {};
   var path = options.path || '/';
   var message = options.message;
-  var loader = options.loader || ROS3D.COLLADA_LOADER_2;
 
   // check for a trailing '/'
   if (path.substr(path.length - 1) !== '/') {
@@ -79,7 +76,7 @@ ROS3D.Marker = function(options) {
       break;
     case ROS3D.MARKER_CUBE:
       // set the cube dimensions
-      var cubeGeom = new THREE.CubeGeometry(message.scale.x, message.scale.y, message.scale.z);
+      var cubeGeom = new THREE.BoxGeometry(message.scale.x, message.scale.y, message.scale.z);
       this.add(new THREE.Mesh(cubeGeom, colorMaterial));
       break;
     case ROS3D.MARKER_SPHERE:
@@ -96,7 +93,7 @@ ROS3D.Marker = function(options) {
       var cylinderGeom = new THREE.CylinderGeometry(0.5, 0.5, 1, 16, 1, false);
       var cylinderMesh = new THREE.Mesh(cylinderGeom, colorMaterial);
       cylinderMesh.quaternion.setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI * 0.5);
-      cylinderMesh.scale = new THREE.Vector3(message.scale.x, message.scale.z, message.scale.y);
+      cylinderMesh.scale.set(message.scale.x, message.scale.z, message.scale.y);
       this.add(cylinderMesh);
       break;
     case ROS3D.MARKER_LINE_STRIP:
@@ -174,7 +171,7 @@ ROS3D.Marker = function(options) {
       // add the points
       var p, cube, curColor, newMesh;
       for (p = 0; p < numPoints; p+=stepSize) {
-        cube = new THREE.CubeGeometry(message.scale.x, message.scale.y, message.scale.z);
+        cube = new THREE.BoxGeometry(message.scale.x, message.scale.y, message.scale.z);
 
         // check the color
         if(createColors) {
@@ -313,7 +310,6 @@ ROS3D.Marker = function(options) {
         path : path,
         resource :  this.msgMesh,
         material : meshColorMaterial,
-        loader : loader
       });
       this.add(meshResource);
       break;
@@ -324,7 +320,7 @@ ROS3D.Marker = function(options) {
         vertices : message.points,
         colors : message.colors
       });
-      tri.scale = new THREE.Vector3(message.scale.x, message.scale.y, message.scale.z);
+      tri.scale.set(message.scale.x, message.scale.y, message.scale.z);
       this.add(tri);
       break;
     default:
@@ -346,7 +342,7 @@ ROS3D.Marker.prototype.setPose = function(pose) {
   this.position.z = pose.position.z;
 
   // set the rotation
-  this.quaternion = new THREE.Quaternion(pose.orientation.x, pose.orientation.y,
+  this.quaternion.set(pose.orientation.x, pose.orientation.y,
       pose.orientation.z, pose.orientation.w);
   this.quaternion.normalize();
 

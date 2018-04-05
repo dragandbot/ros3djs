@@ -45,7 +45,7 @@ ROS3D.Viewer = function(options) {
   this.renderer.setClearColor(parseInt(background.replace('#', '0x'), 16), alpha);
   this.renderer.sortObjects = false;
   this.renderer.setSize(width, height);
-  this.renderer.shadowMapEnabled = false;
+  this.renderer.shadowMap.enabled = false;
   this.renderer.autoClear = false;
 
   // create the global scene
@@ -120,9 +120,7 @@ ROS3D.Viewer.prototype.draw = function(){
   // set the scene
   this.renderer.clear(true, true, true);
   this.renderer.render(this.scene, this.camera);
-
-  // render any mouseovers
-  this.highlighter.renderHighlight(this.renderer, this.scene, this.camera);
+  this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
 
   // draw the frame
   this.animationRequestId = requestAnimationFrame(this.draw.bind(this));

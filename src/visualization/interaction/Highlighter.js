@@ -13,7 +13,7 @@
 ROS3D.Highlighter = function(options) {
   options = options || {};
   this.mouseHandler = options.mouseHandler;
-  this.hoverObjs = [];
+  this.hoverObjs = {};
 
   // bind the mouse events
   this.mouseHandler.addEventListener('mouseover', this.onMouseOver.bind(this));
@@ -26,7 +26,7 @@ ROS3D.Highlighter = function(options) {
  * @param event - the event that contains the target of the mouseover
  */
 ROS3D.Highlighter.prototype.onMouseOver = function(event) {
-  this.hoverObjs.push(event.currentTarget);
+  this.hoverObjs[event.currentTarget.uuid] = event.currentTarget;
 };
 
 /**
@@ -35,62 +35,104 @@ ROS3D.Highlighter.prototype.onMouseOver = function(event) {
  * @param event - the event that contains the target of the mouseout
  */
 ROS3D.Highlighter.prototype.onMouseOut = function(event) {
-  this.hoverObjs.splice(this.hoverObjs.indexOf(event.currentTarget), 1);
+  var uuid = event.currentTarget.uuid;
+  if (uuid in this.hoverObjs)
+  {
+    delete this.hoverObjs[uuid];
+  }
 };
 
+
 /**
- * Add all corresponding webgl objects in the given scene and add them to the given render list.
+ * Render the highlights for all objects that are currently highlighted.
  *
- * @param scene - the scene to check for webgl objects
- * @param objects - the objects list to check
- * @param renderList - the list to add to
+ * This method should be executed after clearing the renderer and
+ * rendering the regular scene.
+ *
+ * @param scene - the current scene, which should contain the highlighted objects (among others)
+ * @param renderer - the renderer used to render the scene.
+ * @param camera - the scene's camera
  */
-ROS3D.Highlighter.prototype.getWebglObjects = function(scene, objects, renderList) {
-  var objlist = scene.__webglObjects;
-  // get corresponding webgl objects
-  for ( var c = 0; c < objects.length; c++) {
-    if (objects[c]) {
-      for ( var o = objlist.length - 1; o >= 0; o--) {
-        if (objlist[o].object === objects[c]) {
-          renderList.push(objlist[o]);
-          break;
-        }
-      }
-      // recurse into children
-      this.getWebglObjects(scene, objects[c].children, renderList);
+ROS3D.Highlighter.prototype.renderHighlights = function(scene, renderer, camera) {
+
+  // Render highlights by making everything but the highlighted
+  // objects invisible...
+  this.makeEverythingInvisible(scene);
+  this.makeHighlightedVisible(scene);
+
+  // Providing a transparent overrideMaterial...
+  var originalOverrideMaterial = scene.overrideMaterial;
+  scene.overrideMaterial = new THREE.MeshBasicMaterial({
+      fog : false,
+      opacity : 0.5,
+      transparent : true,
+      depthTest : true,
+      depthWrite : false,
+      polygonOffset : true,
+      polygonOffsetUnits : -1,
+      side : THREE.DoubleSide
+  });
+
+  // And then rendering over the regular scene
+  renderer.render(scene, camera);
+
+  // Finally, restore the original overrideMaterial (if any) and
+  // object visibility.
+  scene.overrideMaterial = originalOverrideMaterial;
+  this.restoreVisibility(scene);
+};
+
+
+/**
+ * Traverses the given object and makes every object that's a Mesh,
+ * Line or Sprite invisible. Also saves the previous visibility state
+ * so we can restore it later.
+ *
+ * @param scene - the object to traverse
+ */
+ROS3D.Highlighter.prototype.makeEverythingInvisible = function (scene) {
+  scene.traverse(function(currentObject) {
+    if ( currentObject instanceof THREE.Mesh || currentObject instanceof THREE.Line
+         || currentObject instanceof THREE.Sprite ) {
+      currentObject.previousVisibility = currentObject.visible;
+      currentObject.visible = false;
     }
+  });
+};
+
+
+/**
+ * Make the objects in the scene that are currently highlighted (and
+ * all of their children!) visible.
+ *
+ * @param scene - the object to traverse
+ */
+ROS3D.Highlighter.prototype.makeHighlightedVisible = function (scene) {
+  var makeVisible = function(currentObject) {
+      if ( currentObject instanceof THREE.Mesh || currentObject instanceof THREE.Line
+           || currentObject instanceof THREE.Sprite ) {
+        currentObject.visible = true;
+      }
+  };
+
+  for (var uuid in this.hoverObjs) {
+    var selectedObject = this.hoverObjs[uuid];
+    // Make each selected object and all of its children visible
+    selectedObject.visible = true;
+    selectedObject.traverse(makeVisible);
   }
 };
 
 /**
- * Render highlighted objects in the scene.
+ * Restore the old visibility state that was saved by
+ * makeEverythinginvisible.
  *
- * @param renderer - the renderer to use
- * @param scene - the scene to use
- * @param camera - the camera to use
+ * @param scene - the object to traverse
  */
-ROS3D.Highlighter.prototype.renderHighlight = function(renderer, scene, camera) {
-  // get webgl objects
-  var renderList = [];
-  this.getWebglObjects(scene, this.hoverObjs, renderList);
-
-  // define highlight material
-  scene.overrideMaterial = new THREE.MeshBasicMaterial({
-    fog : false,
-    opacity : 0.5,
-    depthTest : true,
-    depthWrite : false,
-    polygonOffset : true,
-    polygonOffsetUnits : -1,
-    side : THREE.DoubleSide
-  });
-
-  // swap render lists, render, undo
-  var oldWebglObjects = scene.__webglObjects;
-  scene.__webglObjects = renderList;
-
-  renderer.render(scene, camera);
-
-  scene.__webglObjects = oldWebglObjects;
-  scene.overrideMaterial = null;
+ROS3D.Highlighter.prototype.restoreVisibility = function (scene) {
+  scene.traverse(function(currentObject) {
+    if (currentObject.hasOwnProperty('previousVisibility')) {
+      currentObject.visible = currentObject.previousVisibility;
+    }
+  }.bind(this));
 };

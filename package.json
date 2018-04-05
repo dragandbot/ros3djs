@@ -1,10 +1,15 @@
 {
-  "name": "ros3djs",
+  "name": "ros3d",
   "homepage": "https://www.robotwebtools.org",
   "description": "The standard ROS Javascript Visualization Library",
-  "version": "0.17.0-SNAPSHOT",
+  "version": "0.18.0",
   "license": "BSD-3-Clause",
   "main": "./src/Ros3D.js",
+  "dependencies": {
+    "eventemitter2": "~2.2.0",
+    "roslib": ">=0.14.0",
+    "three": "^0.88.0"
+  },
   "devDependencies": {
     "chai": "^3.5.0",
     "grunt": "^1.0.1",
@@ -28,8 +33,12 @@
     "ros",
     "roslib",
     "roslibjs",
+    "ros3d",
     "ros3djs",
     "robot"
   ],
-  "author": "Robot Webtools Team <robot-web-tools@googlegroups.com> (http://robotwebtools.org)"
+  "author": "Robot Webtools Team <robot-web-tools@googlegroups.com> (http://robotwebtools.org)",
+  "directories": {
+    "example": "examples"
+  }
 }

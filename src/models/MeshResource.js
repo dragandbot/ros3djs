@@ -14,8 +14,6 @@
  *  * resource - the resource file name to load
  *  * material (optional) - the material to use for the object
  *  * warnings (optional) - if warnings should be printed
- *  * loader (optional) - the Collada loader to use (e.g., an instance of ROS3D.COLLADA_LOADER
- *                        ROS3D.COLLADA_LOADER_2) -- defaults to ROS3D.COLLADA_LOADER_2
  */
 ROS3D.MeshResource = function(options) {
   var that = this;
@@ -24,13 +22,12 @@ ROS3D.MeshResource = function(options) {
   var resource = options.resource;
   var material = options.material || null;
   this.warnings = options.warnings;
-  var loaderType = options.loader || ROS3D.COLLADA_LOADER_2;
 
   THREE.Object3D.call(this);
 
   // check for a trailing '/'
   if (path.substr(path.length - 1) !== '/') {
-    this.path += '/';
+    path += '/';
   }
 
   var uri = path + resource;
@@ -39,52 +36,52 @@ ROS3D.MeshResource = function(options) {
   // check the type
   var loader;
   if (fileType === '.dae') {
-    if (loaderType ===  ROS3D.COLLADA_LOADER) {
-      loader = new THREE.ColladaLoader();
-    } else {
-      loader = new ColladaLoader2();
-    }
+    loader = new THREE.ColladaLoader();
     loader.log = function(message) {
       if (that.warnings) {
         console.warn(message);
       }
     };
-    loader.load(uri, function colladaReady(collada) {
-      // check for a scale factor in ColladaLoader2
-      if(loaderType === ROS3D.COLLADA_LOADER_2 && collada.dae.asset.unit) {
-        var scale = collada.dae.asset.unit;
-        collada.scene.scale = new THREE.Vector3(scale, scale, scale);
-      }
-
-      // add a texture to anything that is missing one
-      if(material !== null) {
-        var setMaterial = function(node, material) {
-          node.material = material;
-          if (node.children) {
-            for (var i = 0; i < node.children.length; i++) {
-              setMaterial(node.children[i], material);
+    loader.load(
+      uri,
+      function colladaReady(collada) {
+        // check for a scale factor in ColladaLoader2
+        // add a texture to anything that is missing one
+        if(material !== null) {
+          collada.scene.traverse(function(child) {
+            if(child instanceof THREE.Mesh) {
+              if(child.material === undefined) {
+                child.material = material;
+              }
             }
-          }
-        };
+          });
+        }
 
-        setMaterial(collada.scene, material);
-      }
-
-      that.add(collada.scene);
-    });
+        that.add(collada.scene);
+      },
+      /*onProgress=*/null,
+      function onLoadError(error) {
+        console.error(error);
+      });
   } else if (fileType === '.stl') {
     loader = new THREE.STLLoader();
     {
-      loader.load(uri, function ( geometry ) {
-        geometry.computeFaceNormals();
-        var mesh;
-        if(material !== null) {
-          mesh = new THREE.Mesh( geometry, material );
-        } else {
-          mesh = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( { color: 0x999999 } ) );
-        }
-        that.add(mesh);
-      } );
+      loader.load(uri,
+                  function ( geometry ) {
+                    geometry.computeFaceNormals();
+                    var mesh;
+                    if(material !== null) {
+                      mesh = new THREE.Mesh( geometry, material );
+                    } else {
+                      mesh = new THREE.Mesh( geometry,
+                                             new THREE.MeshBasicMaterial( { color: 0x999999 } ) );
+                    }
+                    that.add(mesh);
+                  },
+                  /*onProgress=*/null,
+                  function onLoadError(error) {
+                    console.error(error);
+                  });
     }
   }
 };

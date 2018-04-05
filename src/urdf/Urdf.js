@@ -56,16 +56,13 @@ ROS3D.Urdf = function(options) {
             var mesh = new ROS3D.MeshResource({
               path : path,
               resource : uri,
-              loader : loader
+              loader : loader,
+              material : colorMaterial
             });
 
             // check for a scale
             if(link.visuals[i].geometry.scale) {
-              mesh.scale = new THREE.Vector3(
-                  visual.geometry.scale.x,
-                  visual.geometry.scale.y,
-                  visual.geometry.scale.z
-                  );
+              mesh.scale.copy(visual.geometry.scale);
             }
 
             // create a scene node with the model
@@ -88,7 +85,7 @@ ROS3D.Urdf = function(options) {
           switch (visual.geometry.type) {
             case ROSLIB.URDF_BOX:
               var dimension = visual.geometry.dimension;
-              var cube = new THREE.CubeGeometry(dimension.x, dimension.y, dimension.z);
+              var cube = new THREE.BoxGeometry(dimension.x, dimension.y, dimension.z);
               shapeMesh = new THREE.Mesh(cube, colorMaterial);
               break;
             case ROSLIB.URDF_CYLINDER:
