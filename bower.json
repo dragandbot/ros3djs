@@ -22,7 +22,7 @@
   ],
   "dependencies": {
     "eventemitter2": "asyncly/EventEmitter2#^0.4.14",
-    "threejs": "mrdoob/three.js#r88",
+    "three.js": "mrdoob/three.js#r88",
     "roslib": "git://github.com/Faibk/roslibjs.git#restore-goals"
   },
   "resolutions": {
