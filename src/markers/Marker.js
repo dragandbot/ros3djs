@@ -295,7 +295,6 @@ ROS3D.Marker = function(options) {
         var sprite = new THREE.Sprite( spriteMaterial );
         var textSize = message.scale.x;
         sprite.scale.set(textWidth / canvas.height * textSize, textSize, 1);
-        sprite.center = new THREE.Vector2(0, 0);
 
         this.add(sprite);      }
       break;
