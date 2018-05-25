@@ -21,11 +21,8 @@
     "Robot Webtools Team <robot-web-tools@googlegroups.com> (http://robotwebtools.org)"
   ],
   "dependencies": {
-    "eventemitter2": "asyncly/EventEmitter2#^0.4.14",
+    "eventemitter2": "~2.2.0",
     "three.js": "mrdoob/three.js#r88",
     "roslib": "git://github.com/Faibk/roslibjs.git#restore-goals"
-  },
-  "resolutions": {
-    "eventemitter2": "~2.2.0"
   }
 }
