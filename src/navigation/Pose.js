@@ -19,13 +19,13 @@
  *  * headDiameter (optional) - the head diameter of the arrow (default: 0.1)
  */
 ROS3D.Pose = function(options) {
+  THREE.Object3D.call(this);
   this.options = options || {};
   this.ros = options.ros;
   this.topicName = options.topic || '/pose';
   this.tfClient = options.tfClient;
   this.color = options.color || 0xcc00ff;
   this.rootObject = options.rootObject || new THREE.Object3D();
-  THREE.Object3D.call(this);
 
   this.sn = null;
 
@@ -48,6 +48,7 @@ ROS3D.Pose.prototype.subscribe = function(){
   this.rosTopic = new ROSLIB.Topic({
       ros : this.ros,
       name : this.topicName,
+      queue_length : 1,
       messageType : 'geometry_msgs/PoseStamped'
   });
   this.rosTopic.subscribe(this.processMessage.bind(this));

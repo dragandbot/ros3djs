@@ -15,13 +15,13 @@
  *  * color (optional) - color for line (default: 0xcc00ff)
  */
 ROS3D.Polygon = function(options) {
+  THREE.Object3D.call(this);
   options = options || {};
   this.ros = options.ros;
   this.topicName = options.topic || '/path';
   this.tfClient = options.tfClient;
   this.color = options.color || 0xcc00ff;
   this.rootObject = options.rootObject || new THREE.Object3D();
-  THREE.Object3D.call(this);
 
   this.sn = null;
   this.line = null;
@@ -45,6 +45,7 @@ ROS3D.Polygon.prototype.subscribe = function(){
   this.rosTopic = new ROSLIB.Topic({
       ros : this.ros,
       name : this.topicName,
+      queue_length : 1,
       messageType : 'geometry_msgs/PolygonStamped'
   });
   this.rosTopic.subscribe(this.processMessage.bind(this));

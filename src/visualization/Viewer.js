@@ -18,6 +18,11 @@
  *  * antialias (optional) - if antialiasing should be used
  *  * intensity (optional) - the lighting intensity setting to use
  *  * cameraPosition (optional) - the starting position of the camera
+ *  * displayPanAndZoomFrame (optional) - whether to display a frame when
+ *  *                                     panning/zooming. Defaults to true.
+ *  * lineTypePanAndZoomFrame - line type for the frame that is displayed when
+ *  *                           panning/zooming. Only has effect when
+ *  *                           displayPanAndZoomFrame is set to true.
  */
 ROS3D.Viewer = function(options) {
   options = options || {};
@@ -36,6 +41,8 @@ ROS3D.Viewer = function(options) {
     z : 3
   };
   var cameraZoomSpeed = options.cameraZoomSpeed || 0.5;
+  var displayPanAndZoomFrame = (options.displayPanAndZoomFrame === undefined) ? true : !!options.displayPanAndZoomFrame;
+  var lineTypePanAndZoomFrame = options.lineTypePanAndZoomFrame || 'full';
 
   // create the canvas to render to
   this.renderer = new THREE.WebGLRenderer({
@@ -59,7 +66,9 @@ ROS3D.Viewer = function(options) {
   // add controls to the camera
   this.cameraControls = new ROS3D.OrbitControls({
     scene : this.scene,
-    camera : this.camera
+    camera : this.camera,
+    displayPanAndZoomFrame : displayPanAndZoomFrame,
+    lineTypePanAndZoomFrame: lineTypePanAndZoomFrame
   });
   this.cameraControls.userZoomSpeed = cameraZoomSpeed;
 
@@ -114,7 +123,9 @@ ROS3D.Viewer.prototype.draw = function(){
   this.cameraControls.update();
 
   // put light to the top-left of the camera
-  this.directionalLight.position = this.camera.localToWorld(new THREE.Vector3(-1, 1, 0));
+  // BUG: position is a read-only property of DirectionalLight,
+  // attempting to assign to it either does nothing or throws an error.
+  //this.directionalLight.position = this.camera.localToWorld(new THREE.Vector3(-1, 1, 0));
   this.directionalLight.position.normalize();
 
   // set the scene

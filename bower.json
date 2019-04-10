@@ -2,7 +2,7 @@
   "name": "ros3d",
   "homepage": "https://www.robotwebtools.org",
   "description": "(BOWER IS DEPRECATING! Please use npm version of ros3d). The standard ROS Javascript Visualization Library",
-  "version": "0.18.0",
+  "version": "1.0.1",
   "license": "BSD-3-Clause",
   "main": "build/ros3d.js",
   "repository": {
@@ -21,8 +21,8 @@
     "Robot Webtools Team <robot-web-tools@googlegroups.com> (http://robotwebtools.org)"
   ],
   "dependencies": {
-    "eventemitter2": "~2.2.0",
-    "three.js": "mrdoob/three.js#r88",
-    "roslib": "git://github.com/Faibk/roslibjs.git#restore-goals"
+    "eventemitter2": "^4.1.0",
+    "threejs": "mrdoob/three.js#r89",
+    "roslibjs": "git://github.com/Faibk/roslibjs.git#restore-goals"
   }
 }

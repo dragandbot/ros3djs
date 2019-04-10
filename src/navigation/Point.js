@@ -16,6 +16,7 @@
  *  * radius (optional) - radius of the point (default: 0.2)
  */
 ROS3D.Point = function(options) {
+  THREE.Object3D.call(this);
   this.options = options || {};
   this.ros = options.ros;
   this.topicName = options.topic || '/point';
@@ -23,7 +24,6 @@ ROS3D.Point = function(options) {
   this.color = options.color || 0xcc00ff;
   this.rootObject = options.rootObject || new THREE.Object3D();
   this.radius = options.radius || 0.2;
-  THREE.Object3D.call(this);
 
   this.sn = null;
 
@@ -46,6 +46,7 @@ ROS3D.Point.prototype.subscribe = function(){
   this.rosTopic = new ROSLIB.Topic({
       ros : this.ros,
       name : this.topicName,
+      queue_length : 1,
       messageType : 'geometry_msgs/PointStamped'
   });
   this.rosTopic.subscribe(this.processMessage.bind(this));
