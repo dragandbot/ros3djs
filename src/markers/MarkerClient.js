@@ -40,6 +40,18 @@ ROS3D.MarkerClient.prototype.unsubscribe = function(){
   }
 };
 
+ROS3D.MarkerClient.prototype.checkTime = function(name){
+    var curTime = new Date().getTime();
+    if (curTime - this.updatedTime[name] > this.lifetime) {
+        this.removeMarker(name);
+        this.emit('change');
+    } else {
+        var that = this;
+        setTimeout(function() {that.checkTime(name);},
+                   100);
+    }
+};
+
 ROS3D.MarkerClient.prototype.subscribe = function(){
   this.unsubscribe();
 
@@ -62,8 +74,8 @@ ROS3D.MarkerClient.prototype.processMessage = function(message){
   // remove old marker from Three.Object3D children buffer
   var oldNode = this.markers[message.ns + message.id];
   if (oldNode) {
-    oldNode.unsubscribeTf();
-    this.rootObject.remove(oldNode);
+    this.removeMarker(message.ns + message.id);
+
   }
 
   this.markers[message.ns + message.id] = new ROS3D.SceneNode({
@@ -74,4 +86,14 @@ ROS3D.MarkerClient.prototype.processMessage = function(message){
   this.rootObject.add(this.markers[message.ns + message.id]);
 
   this.emit('change');
+};
+
+ROS3D.MarkerClient.prototype.removeMarker = function(key) {
+  var oldNode = this.markers[key];
+  oldNode.unsubscribeTf();
+  this.rootObject.remove(oldNode);
+  oldNode.children.forEach(child => {
+    child.dispose();
+  });
+  delete(this.markers[key]);
 };
