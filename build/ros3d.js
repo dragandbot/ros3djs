@@ -2184,8 +2184,7 @@ ROS3D.MarkerArrayClient.prototype.processMessage = function(arrayMessage){
       if(message.ns + message.id in this.markers) { // "MODIFY"
         updated = this.markers[message.ns + message.id].children[0].update(message);
         if(!updated) { // "REMOVE"
-          this.markers[message.ns + message.id].unsubscribeTf();
-          this.rootObject.remove(this.markers[message.ns + message.id]);
+          this.removeMarker(message.ns + message.id);
         }
       }
       if(!updated) { // "ADD"
@@ -2205,14 +2204,11 @@ ROS3D.MarkerArrayClient.prototype.processMessage = function(arrayMessage){
       console.warn('Received marker message with deprecated action identifier "1"');
     }
     else if(message.action === 2) { // "DELETE"
-      this.markers[message.ns + message.id].unsubscribeTf();
-      this.rootObject.remove(this.markers[message.ns + message.id]);
-      delete this.markers[message.ns + message.id];
+      this.removeMarker(message.ns + message.id);
     }
     else if(message.action === 3) { // "DELETE ALL"
       for (var m in this.markers){
-        this.markers[m].unsubscribeTf();
-        this.rootObject.remove(this.markers[m]);
+        this.removeMarker(m);
       }
       this.markers = {};
     }
@@ -2230,6 +2226,18 @@ ROS3D.MarkerArrayClient.prototype.unsubscribe = function(){
   }
 };
 
+ROS3D.MarkerClient.prototype.removeMarker = function(key) {
+  var oldNode = this.markers[key];
+  if(!oldNode) {
+    return;
+  }
+  oldNode.unsubscribeTf();
+  this.rootObject.remove(oldNode);
+  oldNode.children.forEach(function(child) {
+    child.dispose();
+  });
+  delete(this.markers[key]);
+};
 /**
  * @author Russell Toris - rctoris@wpi.edu
  */
@@ -2272,6 +2280,18 @@ ROS3D.MarkerClient.prototype.unsubscribe = function(){
   }
 };
 
+ROS3D.MarkerClient.prototype.checkTime = function(name){
+    var curTime = new Date().getTime();
+    if (curTime - this.updatedTime[name] > this.lifetime) {
+        this.removeMarker(name);
+        this.emit('change');
+    } else {
+        var that = this;
+        setTimeout(function() {that.checkTime(name);},
+                   100);
+    }
+};
+
 ROS3D.MarkerClient.prototype.subscribe = function(){
   this.unsubscribe();
 
@@ -2294,8 +2314,8 @@ ROS3D.MarkerClient.prototype.processMessage = function(message){
   // remove old marker from Three.Object3D children buffer
   var oldNode = this.markers[message.ns + message.id];
   if (oldNode) {
-    oldNode.unsubscribeTf();
-    this.rootObject.remove(oldNode);
+    this.removeMarker(message.ns + message.id);
+
   }
 
   this.markers[message.ns + message.id] = new ROS3D.SceneNode({
@@ -2306,6 +2326,19 @@ ROS3D.MarkerClient.prototype.processMessage = function(message){
   this.rootObject.add(this.markers[message.ns + message.id]);
 
   this.emit('change');
+};
+
+ROS3D.MarkerClient.prototype.removeMarker = function(key) {
+  var oldNode = this.markers[key];
+  if(!oldNode) {
+    return;
+  }
+  oldNode.unsubscribeTf();
+  this.rootObject.remove(oldNode);
+  oldNode.children.forEach(function(child) {
+    child.dispose();
+  });
+  delete(this.markers[key]);
 };
 
 /**
