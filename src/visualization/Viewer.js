@@ -18,6 +18,7 @@
  *  * antialias (optional) - if antialiasing should be used
  *  * intensity (optional) - the lighting intensity setting to use
  *  * cameraPosition (optional) - the starting position of the camera
+ *  * maxFps (optional) - maximum fps to redraw
  */
 ROS3D.Viewer = function(options) {
   options = options || {};
@@ -36,6 +37,8 @@ ROS3D.Viewer = function(options) {
     z : 3
   };
   var cameraZoomSpeed = options.cameraZoomSpeed || 0.5;
+  this.maxFps = options.maxFps;
+  this.animationStart = 0;
 
   // create the canvas to render to
   this.renderer = new THREE.WebGLRenderer({
@@ -109,7 +112,13 @@ ROS3D.Viewer.prototype.draw = function(){
     // Do nothing if stopped
     return;
   }
-
+  var now = new Date().getTime();
+  var elapsed = now - this.animationStart;
+  var animationDelay = this.maxFps ? 1000 / this.maxFps : 1;
+  if (elapsed < animationDelay){
+    this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
+    return;
+  }
   // update the controls
   this.cameraControls.update();
 
@@ -124,6 +133,7 @@ ROS3D.Viewer.prototype.draw = function(){
 
   // draw the frame
   this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
+  this.animationStart = now - (elapsed % animationDelay);
 };
 
 /**
@@ -162,3 +172,22 @@ ROS3D.Viewer.prototype.resize = function(width, height) {
   this.camera.updateProjectionMatrix();
   this.renderer.setSize(width, height);
 };
+
+/**
+ * Throttles fps to the given limit
+ *
+ * @param   fps new maxFps value
+ */
+ROS3D.Viewer.prototype.setMaxFps = function (fps) {
+  this.maxFps = fps;
+};
+
+/**
+ * Return max fps value
+ *
+ * @returns   fps value
+ */
+ROS3D.Viewer.prototype.getMaxFps = function () {
+  return this.maxFps;
+};
+
