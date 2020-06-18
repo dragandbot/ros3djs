@@ -50430,12 +50430,12 @@ class MeshResource extends THREE$1.Object3D {
                     function ( geometry ) {
                       geometry.computeFaceNormals();
                       var mesh;
-                      if(material !== null) {
-                        mesh = new THREE$1.Mesh( geometry, material );
-                      } else {
-                        mesh = new THREE$1.Mesh( geometry,
-                                               new THREE$1.MeshBasicMaterial( { color: 0x999999 } ) );
-                      }
+                        if(material !== null) {
+                            mesh = new THREE$1.Mesh( geometry,  new THREE$1.MeshPhongMaterial( { ambient: 0x050505, color: 0xa2a2a2, specular: 0x555555, shininess: 1 } ) );
+                        } else {
+                            mesh = new THREE$1.Mesh( geometry,
+                                new THREE$1.MeshPhongMaterial( { ambient: 0x050505, color: 0xa2a2a2, specular: 0x555555, shininess: 1 } ) );
+                        }
                       that.add(mesh);
                     },
                     /*onProgress=*/null,
