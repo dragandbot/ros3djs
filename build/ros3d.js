@@ -1950,6 +1950,7 @@ ROS3D.Marker = function(options) {
         resource :  this.msgMesh,
         material : meshColorMaterial,
       });
+      meshResource.scale.fromArray(this.msgScale);
       this.add(meshResource);
       break;
     case ROS3D.MARKER_TRIANGLE_LIST:
