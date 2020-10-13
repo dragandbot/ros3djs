@@ -2103,14 +2103,22 @@ ROS3D.Marker.prototype.dispose = function() {
     if (element instanceof ROS3D.MeshResource) {
       element.children.forEach(function(scene) {
         if (scene.material !== undefined) {
-          scene.material.dispose();
+          if(scene.material instanceof Array) {
+            scene.material.forEach(function (mat) {mat.dispose();});
+          } else {
+            scene.material.dispose();
+          }
         }
         scene.children.forEach(function(mesh) {
           if (mesh.geometry !== undefined) {
             mesh.geometry.dispose();
           }
           if (mesh.material !== undefined) {
-            mesh.material.dispose();
+            if(mesh.material instanceof Array) {
+              mesh.material.forEach(function (mat) {mat.dispose();});
+            } else {
+              mesh.material.dispose();
+            }
           }
           scene.remove(mesh);
         });
@@ -2121,7 +2129,11 @@ ROS3D.Marker.prototype.dispose = function() {
           element.geometry.dispose();
       }
       if (element.material !== undefined) {
-          element.material.dispose();
+          if(element.material instanceof Array) {
+            element.material.forEach(function (mat) {mat.dispose();});
+          } else {
+            element.material.dispose();
+          }
       }
     }
     element.parent.remove(element);
