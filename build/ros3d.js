@@ -2663,6 +2663,7 @@ ROS3D.MeshResource = function(options) {
   var resource = options.resource;
   var material = options.material || null;
   this.warnings = options.warnings;
+  this.state = 'loading';
 
   THREE.Object3D.call(this);
 
@@ -2699,9 +2700,11 @@ ROS3D.MeshResource = function(options) {
         }
 
         that.add(collada.scene);
+        that.state = 'finished';
       },
       /*onProgress=*/null,
       function onLoadError(error) {
+  	that.state = 'error';
         console.error(error);
       });
   } else if (fileType === '.stl') {
@@ -2718,9 +2721,11 @@ ROS3D.MeshResource = function(options) {
                               new THREE.MeshPhongMaterial( { ambient: 0x050505, color: 0xa2a2a2, specular: 0x555555, shininess: 1 } ) );
                       }
                     that.add(mesh);
+                    that.state = 'finished';
                   },
                   /*onProgress=*/null,
                   function onLoadError(error) {
+                    that.state = 'error';
                     console.error(error);
                   });
     }
