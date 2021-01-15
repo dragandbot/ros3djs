@@ -88,6 +88,8 @@ ROS3D.MeshResource = function(options) {
                     console.error(error);
                   });
     }
+  } else {
+    that.state = 'error';
   }
 };
 ROS3D.MeshResource.prototype.__proto__ = THREE.Object3D.prototype;
