@@ -1459,7 +1459,7 @@ THREE.ColladaLoader.prototype = {
 						material.transparent = true;
 						break;
 					case 'transparency':
-						if ( parameter.float !== undefined ) material.opacity = parameter.float;
+						if ( parameter.float !== undefined && parameter.float !== 0) material.opacity = parameter.float;
 						material.transparent = true;
 						break;
 
