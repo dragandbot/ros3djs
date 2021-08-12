@@ -4579,6 +4579,7 @@ ROS3D.OrbitControls = function(options) {
   this.thetaDelta = 0;
   this.scale = 1;
   this.lastPosition = new THREE.Vector3();
+  this.moveCamera = false;
   // internal states
   var STATE = {
     NONE : -1,
@@ -4608,8 +4609,8 @@ ROS3D.OrbitControls = function(options) {
   function onMouseDown(event3D) {
     var event = event3D.domEvent;
     event.preventDefault();
-
-    switch (event.button) {
+    var button = (event.button === 0 && this.moveCamera) ? 1 : event.button;
+    switch (button) {
       case 0:
         state = STATE.ROTATE;
         rotateStart.set(event.clientX, event.clientY);
