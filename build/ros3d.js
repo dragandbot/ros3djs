@@ -4760,17 +4760,31 @@ ROS3D.OrbitControls = function(options) {
    */
   function onTouchDown(event3D) {
     var event = event3D.domEvent;
+    var rMat;
     switch (event.touches.length) {
       case 1:
-        state = STATE.ROTATE;
-        rotateStart.set(event.touches[0].pageX - window.scrollX,
-                        event.touches[0].pageY - window.scrollY);
+        if(this.moveCamera) {
+          state = STATE.MOVE;
+          moveStartNormal = new THREE.Vector3(0, 0, 1);
+          rMat = new THREE.Matrix4().extractRotation(this.camera.matrix);
+          moveStartNormal.applyMatrix4(rMat);
+          moveStartCenter = that.center.clone();
+          moveStartPosition = that.camera.position.clone();
+          moveStartIntersection = intersectViewPlane(event3D.mouseRay,
+                                                     moveStartCenter,
+                                                     moveStartNormal);
+        } else {
+          state = STATE.ROTATE;
+          rotateStart.set(event.touches[0].pageX - window.scrollX,
+                         event.touches[0].pageY - window.scrollY);  
+        }
+        
         break;
       case 2:
         state = STATE.NONE;
         /* ready for move */
         moveStartNormal = new THREE.Vector3(0, 0, 1);
-        var rMat = new THREE.Matrix4().extractRotation(this.camera.matrix);
+        rMat = new THREE.Matrix4().extractRotation(this.camera.matrix);
         moveStartNormal.applyMatrix4(rMat);
         moveStartCenter = that.center.clone();
         moveStartPosition = that.camera.position.clone();
@@ -4809,33 +4823,35 @@ ROS3D.OrbitControls = function(options) {
       rotateStart.copy(rotateEnd);
       this.showAxes();
     } else {
-      touchMoveVector[0].set(touchStartPosition[0].x - event.touches[0].pageX,
-                             touchStartPosition[0].y - event.touches[0].pageY);
-      touchMoveVector[1].set(touchStartPosition[1].x - event.touches[1].pageX,
-                             touchStartPosition[1].y - event.touches[1].pageY);
-      if (touchMoveVector[0].lengthSq() > touchMoveThreshold &&
-          touchMoveVector[1].lengthSq() > touchMoveThreshold) {
-        touchStartPosition[0].set(event.touches[0].pageX,
-                                  event.touches[0].pageY);
-        touchStartPosition[1].set(event.touches[1].pageX,
-                                  event.touches[1].pageY);
-        if (touchMoveVector[0].dot(touchMoveVector[1]) > 0 &&
-            state !== STATE.ZOOM) {
-          state = STATE.MOVE;
-        } else if (touchMoveVector[0].dot(touchMoveVector[1]) < 0 &&
-                   state !== STATE.MOVE) {
-          state = STATE.ZOOM;
-        }
-        if (state === STATE.ZOOM) {
-          var tmpVector = new THREE.Vector2();
-          tmpVector.subVectors(touchStartPosition[0],
-                               touchStartPosition[1]);
-          if (touchMoveVector[0].dot(tmpVector) < 0 &&
-              touchMoveVector[1].dot(tmpVector) > 0) {
-            that.zoomOut();
-          } else if (touchMoveVector[0].dot(tmpVector) > 0 &&
-                     touchMoveVector[1].dot(tmpVector) < 0) {
-            that.zoomIn();
+      if (state !== STATE.MOVE) {
+        touchMoveVector[0].set(touchStartPosition[0].x - event.touches[0].pageX,
+                               touchStartPosition[0].y - event.touches[0].pageY);
+        touchMoveVector[1].set(touchStartPosition[1].x - event.touches[1].pageX,
+                               touchStartPosition[1].y - event.touches[1].pageY);
+        if (touchMoveVector[0].lengthSq() > touchMoveThreshold &&
+            touchMoveVector[1].lengthSq() > touchMoveThreshold) {
+          touchStartPosition[0].set(event.touches[0].pageX,
+                                    event.touches[0].pageY);
+          touchStartPosition[1].set(event.touches[1].pageX,
+                                    event.touches[1].pageY);
+          if (touchMoveVector[0].dot(touchMoveVector[1]) > 0 &&
+              state !== STATE.ZOOM) {
+            state = STATE.MOVE;
+          } else if (touchMoveVector[0].dot(touchMoveVector[1]) < 0 &&
+                     state !== STATE.MOVE) {
+            state = STATE.ZOOM;
+          }
+          if (state === STATE.ZOOM) {
+            var tmpVector = new THREE.Vector2();
+            tmpVector.subVectors(touchStartPosition[0],
+                                 touchStartPosition[1]);
+            if (touchMoveVector[0].dot(tmpVector) < 0 &&
+                touchMoveVector[1].dot(tmpVector) > 0) {
+              that.zoomOut();
+            } else if (touchMoveVector[0].dot(tmpVector) > 0 &&
+                       touchMoveVector[1].dot(tmpVector) < 0) {
+              that.zoomIn();
+            }
           }
         }
       }
