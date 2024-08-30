@@ -38,7 +38,6 @@ ROS3D.Viewer = function(options) {
   };
   var cameraZoomSpeed = options.cameraZoomSpeed || 0.5;
   this.maxFps = options.maxFps;
-  this.animationStart = 0;
 
   // create the canvas to render to
   this.renderer = new THREE.WebGLRenderer({
@@ -112,13 +111,7 @@ ROS3D.Viewer.prototype.draw = function(){
     // Do nothing if stopped
     return;
   }
-  var now = new Date().getTime();
-  var elapsed = now - this.animationStart;
-  var animationDelay = this.maxFps ? 1000 / this.maxFps : 1;
-  if (elapsed < animationDelay){
-    this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
-    return;
-  }
+
   // update the controls
   this.cameraControls.update();
 
@@ -132,8 +125,11 @@ ROS3D.Viewer.prototype.draw = function(){
   this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
 
   // draw the frame
-  this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
-  this.animationStart = now - (elapsed % animationDelay);
+  if(this.maxFps) {
+    this.animationRequestId = setTimeout(this.draw.bind(this), 1000 / this.maxFps);
+  } else {
+    this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
+  }
 };
 
 /**
@@ -142,6 +138,7 @@ ROS3D.Viewer.prototype.draw = function(){
 ROS3D.Viewer.prototype.stop = function(){
   if(!this.stopped){
     // Stop animation render loop
+    clearTimeout(this.animationRequestId);
     cancelAnimationFrame(this.animationRequestId);
   }
   this.stopped = true;
