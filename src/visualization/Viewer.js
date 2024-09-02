@@ -116,8 +116,8 @@ ROS3D.Viewer.prototype.draw = function(){
   this.cameraControls.update();
 
   // put light to the top-left of the camera
-  this.directionalLight.position = this.camera.localToWorld(new THREE.Vector3(-1, 1, 0));
-  this.directionalLight.position.normalize();
+  var cameraPos = this.camera.localToWorld(new THREE.Vector3(-1, 1, 0)).normalize();
+  this.directionalLight.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
 
   // set the scene
   this.renderer.clear(true, true, true);
