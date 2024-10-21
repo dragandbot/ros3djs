@@ -789,7 +789,6 @@ ROS3D.InteractiveMarker.prototype.onServerSetPose = function(event) {
       var pose = event.pose;
       this.position.copy(pose.position);
       this.quaternion.copy(pose.orientation);
-      this.updateMatrixWorld(true);
     }
   }
 };
@@ -1985,9 +1984,6 @@ ROS3D.Marker.prototype.setPose = function(pose) {
   this.quaternion.set(pose.orientation.x, pose.orientation.y,
       pose.orientation.z, pose.orientation.w);
   this.quaternion.normalize();
-
-  // update the world
-  this.updateMatrixWorld();
 };
 
 /**
@@ -5110,7 +5106,6 @@ ROS3D.SceneNode.prototype.updatePose = function(pose) {
   this.position.set( pose.position.x, pose.position.y, pose.position.z );
   this.quaternion.set(pose.orientation.x, pose.orientation.y,
       pose.orientation.z, pose.orientation.w);
-  this.updateMatrixWorld(true);
 };
 
 ROS3D.SceneNode.prototype.unsubscribeTf = function() {
@@ -5157,7 +5152,6 @@ ROS3D.Viewer = function(options) {
   };
   var cameraZoomSpeed = options.cameraZoomSpeed || 0.5;
   this.maxFps = options.maxFps;
-  this.animationStart = 0;
 
   // create the canvas to render to
   this.renderer = new THREE.WebGLRenderer({
@@ -5231,19 +5225,13 @@ ROS3D.Viewer.prototype.draw = function(){
     // Do nothing if stopped
     return;
   }
-  var now = new Date().getTime();
-  var elapsed = now - this.animationStart;
-  var animationDelay = this.maxFps ? 1000 / this.maxFps : 1;
-  if (elapsed < animationDelay){
-    this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
-    return;
-  }
+
   // update the controls
   this.cameraControls.update();
 
   // put light to the top-left of the camera
-  this.directionalLight.position = this.camera.localToWorld(new THREE.Vector3(-1, 1, 0));
-  this.directionalLight.position.normalize();
+  var cameraPos = this.camera.localToWorld(new THREE.Vector3(-1, 1, 0)).normalize();
+  this.directionalLight.position.set(cameraPos.x, cameraPos.y, cameraPos.z);
 
   // set the scene
   this.renderer.clear(true, true, true);
@@ -5251,8 +5239,11 @@ ROS3D.Viewer.prototype.draw = function(){
   this.highlighter.renderHighlights(this.scene, this.renderer, this.camera);
 
   // draw the frame
-  this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
-  this.animationStart = now - (elapsed % animationDelay);
+  if(this.maxFps) {
+    this.animationRequestId = setTimeout(this.draw.bind(this), 1000 / this.maxFps);
+  } else {
+    this.animationRequestId = requestAnimationFrame(this.draw.bind(this));
+  }
 };
 
 /**
@@ -5261,6 +5252,7 @@ ROS3D.Viewer.prototype.draw = function(){
 ROS3D.Viewer.prototype.stop = function(){
   if(!this.stopped){
     // Stop animation render loop
+    clearTimeout(this.animationRequestId);
     cancelAnimationFrame(this.animationRequestId);
   }
   this.stopped = true;

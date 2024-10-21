@@ -59,7 +59,6 @@ ROS3D.SceneNode.prototype.updatePose = function(pose) {
   this.position.set( pose.position.x, pose.position.y, pose.position.z );
   this.quaternion.set(pose.orientation.x, pose.orientation.y,
       pose.orientation.z, pose.orientation.w);
-  this.updateMatrixWorld(true);
 };
 
 ROS3D.SceneNode.prototype.unsubscribeTf = function() {

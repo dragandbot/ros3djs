@@ -346,9 +346,6 @@ ROS3D.Marker.prototype.setPose = function(pose) {
   this.quaternion.set(pose.orientation.x, pose.orientation.y,
       pose.orientation.z, pose.orientation.w);
   this.quaternion.normalize();
-
-  // update the world
-  this.updateMatrixWorld();
 };
 
 /**

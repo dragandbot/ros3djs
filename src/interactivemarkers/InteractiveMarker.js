@@ -296,7 +296,6 @@ ROS3D.InteractiveMarker.prototype.onServerSetPose = function(event) {
       var pose = event.pose;
       this.position.copy(pose.position);
       this.quaternion.copy(pose.orientation);
-      this.updateMatrixWorld(true);
     }
   }
 };
